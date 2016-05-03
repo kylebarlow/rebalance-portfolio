@@ -1,0 +1,44 @@
+{
+    "targets" : {
+	"stocks" : 0.75,
+	"bonds" : 0.15,
+	"reit" : 0.1
+    },
+    "holdings" : [
+	{
+            "symbol" : "VASGX",
+            "composition" : {"us_stocks" : 0.484, "int_stocks" : 0.322, "bonds" : 0.194 },
+            "shares" : 100.0,
+	    "buy_additional" : false,
+            "current_price" : 28.02
+	},{
+            "symbol" : "VNQ",
+            "type" : "reit",
+            "shares" : 100.0,
+            "current_price" : 82.230
+	},{
+            "symbol" : "BND",
+            "type" : "bonds",
+            "shares" : 100.0,
+            "current_price" : 82.890
+	},{
+            "symbol" : "VXUS",
+            "type" : "int_stocks",
+            "shares" : 100.0,
+            "current_price" : 45.260
+	},{
+            "symbol" : "VTI",
+            "type" : "us_stocks",
+            "shares" : 100.0,
+            "current_price" : 105.266
+	},{
+            "symbol" : "USO",
+            "type" : "other",
+            "shares" : 100.0,
+            "current_price" : 10.74
+	},{
+	    "type" : "cash",
+	    "shares" : 100000.99
+	}
+    ]
+}
