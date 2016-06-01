@@ -5,6 +5,7 @@ import sys
 import os
 import copy
 import random
+import math
 
 def truncate(f, n):
     '''Truncates/pads a float f to n decimal places without rounding'''
@@ -217,7 +218,7 @@ class Holdings:
             limit_prices.append( (proportion * other.cash / self.symbol_map[symbol].shares + self.symbol_map[symbol].current_price, symbol) )
         print( 'Limit prices:' )
         for limit_price, symbol in limit_prices:
-            print( '{}: {} ({:d} shares)'.format(symbol, truncate(limit_price, 2), int(shares_diffs_map[symbol])) )
+            print( '{}: {} ({:d} shares)'.format(symbol, truncate(limit_price, 2), math.ceil(shares_diffs_map[symbol])) )
         print()
 
     def spend_cash_to_balance(self, targets):
