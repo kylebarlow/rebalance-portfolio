@@ -283,9 +283,9 @@ class JSONProportions(Proportions):
                 self.proportions[holding_type] = float( json_proportions[holding_type] )
 
 
-def balance_account( json_account ):
+def balance_account( json_account, name ):
     targets = JSONProportions( json_account['targets'] )
-    print( 'Initial portfolio' )
+    print( '\nInitial portfolio: ' + name )
     print( 'targets:', targets )
     holdings = Holdings( json_account['holdings'] )
     print( 'holdings:', holdings.get_current_allocations() )
@@ -296,13 +296,15 @@ def balance_account( json_account ):
 
 def main():
     accounts = []
+    names = []
     for account_file in sys.argv[1:]:
         assert( os.path.isfile(account_file) )
+        names.append( os.path.basename(account_file) )
         with open(account_file) as f:
             accounts.append( json.load(f) )
 
-    for account in accounts:
-        balance_account( account )
+    for account, name in zip(accounts, names):
+        balance_account( account, name )
 
 if __name__ == '__main__':
     main()
