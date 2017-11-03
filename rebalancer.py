@@ -215,7 +215,7 @@ class Holdings:
                 shares_diffs_map[symbol] = shares_diff
         limit_prices = []
         for symbol, proportion in shares_proportionality.items():
-            limit_prices.append( (proportion * other.cash / self.symbol_map[symbol].shares + self.symbol_map[symbol].current_price, symbol) )
+            limit_prices.append( (proportion * other.cash / shares_diffs_map[symbol] + self.symbol_map[symbol].current_price, symbol) )
         print( 'Limit prices:' )
         for limit_price, symbol in limit_prices:
             print( '{}: {} ({:d} shares)'.format(symbol, truncate(limit_price, 2), math.ceil(shares_diffs_map[symbol])) )
