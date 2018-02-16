@@ -180,6 +180,14 @@ class Holdings:
         else:
             return False
 
+    def sell_type(self, type_to_sell, num_shares = 1):
+        num_shares = float( num_shares )
+        # Note: this should really measure proportions within category somehow
+        holding_to_sell = random.choice( list(self.types_to_buy[type_to_sell]) )
+
+        holding_to_sell.sell_shares( num_shares )
+        self.cash_holding.buy_shares( holding_to_sell.current_price * num_shares )
+
     def get_shares_diffs(self, other):
         shares_diffs = []
         for other_holding in other.holdings:
@@ -210,7 +218,7 @@ class Holdings:
         total_symbol_costs = sum( [self.symbol_map[symbol].current_price for shares_diff, symbol in shares_diffs if symbol != 'cash' and symbol != 'other' and shares_diff != 0.0] )
         shares_proportionality = {}
         for shares_diff, symbol in shares_diffs:
-            if symbol != 'cash' and symbol != 'other' and shares_diff != 0.0:
+            if symbol != 'cash' and symbol != 'other' and shares_diff > 0:
                 shares_proportionality[symbol] = self.symbol_map[symbol].current_price / total_symbol_costs
                 shares_diffs_map[symbol] = shares_diff
         limit_prices = []
@@ -221,8 +229,28 @@ class Holdings:
             print( '{}: {} ({:d} shares)'.format(symbol, truncate(limit_price, 2), math.ceil(shares_diffs_map[symbol])) )
         print()
 
-    def spend_cash_to_balance(self, targets):
+    def spend_cash_to_balance(self, targets, sell_shares = True):
         new_holdings = self.copy()
+
+        if sell_shares:
+            diffs = sorted( [(y, x) for x,y in targets.diff( new_holdings.get_current_allocations() ).items()], reverse = False )
+            total_buy_diff = 0.0
+            for diff, diff_name in diffs:
+                if diff > 0:
+                    total_buy_diff += diff
+
+            cash_diff = new_holdings.get_current_allocations().get_type('cash')
+            while total_buy_diff > cash_diff:
+                diffs = sorted( [(y, x) for x,y in targets.diff( new_holdings.get_current_allocations() ).items()], reverse = False )
+                for diff, diff_name in diffs:
+                    if diff_name != 'cash':
+                        new_holdings.sell_type( diff_name )
+                        break
+                cash_diff = new_holdings.get_current_allocations().get_type('cash')
+            # diffs = sorted( [(y, x) for x,y in targets.diff( new_holdings.get_current_allocations() ).items()], reverse = False )
+            # print( diffs )
+            # sys.exit()
+
         while True:
             allocations = new_holdings.get_current_allocations()
             diffs = sorted( [(y, x) for x,y in targets.diff( allocations ).items()], reverse = True )
