@@ -229,7 +229,7 @@ class Holdings:
             print( '{}: {} ({:d} shares)'.format(symbol, truncate(limit_price, 2), math.ceil(shares_diffs_map[symbol])) )
         print()
 
-    def spend_cash_to_balance(self, targets, sell_shares = True):
+    def spend_cash_to_balance(self, targets, sell_shares = False):
         new_holdings = self.copy()
 
         if sell_shares:
