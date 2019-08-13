@@ -305,8 +305,8 @@ class JSONProportions(Proportions):
             if holding_type == 'stocks':
                 assert( 'us_stocks' not in json_proportions )
                 assert( 'int_stocks' not in json_proportions )
-                self.proportions['us_stocks'] = 2.0 * float( json_proportions['stocks'] ) / 3.0
-                self.proportions['int_stocks'] = float( json_proportions['stocks'] ) / 3.0
+                self.proportions['us_stocks'] = 7.0 * float( json_proportions['stocks'] ) / 10.0
+                self.proportions['int_stocks'] = 3.0 * float( json_proportions['stocks'] ) / 10.0
             else:
                 self.proportions[holding_type] = float( json_proportions[holding_type] )
 
