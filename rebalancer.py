@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import json
 import sys
@@ -6,6 +6,12 @@ import os
 import copy
 import random
 import math
+import datetime
+import tempfile
+
+import numpy as np
+import yahoo_fin
+import yahoo_fin.stock_info
 
 def truncate(f, n):
     '''Truncates/pads a float f to n decimal places without rounding'''
@@ -14,6 +20,28 @@ def truncate(f, n):
         return '{0:.{1}f}'.format(f, n)
     i, p, d = s.partition('.')
     return '.'.join([i, (d+'0'*n)[:n]])
+
+def fetch_price(symbol, date_str_format = '%m/%d/%Y %H:%M:%S'):
+    cache_path = os.path.join( tempfile.gettempdir(), 'stock_price_cache.json' )
+    if os.path.isfile( cache_path ):
+        with open(cache_path, 'r') as f:
+            price_cache = json.load(f)
+    else:
+        price_cache = {}
+
+    if symbol not in price_cache or datetime.datetime.now() - datetime.datetime.strptime( price_cache[symbol]['date'], date_str_format) >= datetime.timedelta(minutes=10):
+        price_cache[symbol] = {}
+        price_cache[symbol]['price'] = yahoo_fin.stock_info.get_live_price(symbol)
+        price_cache[symbol]['date'] = datetime.datetime.now().strftime(date_str_format)
+
+    with open(cache_path, 'w') as f:
+        json.dump(price_cache, f)
+
+    if price_cache[symbol]['price'] <= 0 or np.isnan(price_cache[symbol]['price']):
+        print(price_cache)
+        print(symbol)
+        assert( price_cache[symbol]['price'] > 0 )
+    return price_cache[symbol]['price']
 
 class Holding:
     def __init__ (self, json_holding):
@@ -40,7 +68,10 @@ class Holding:
             self.current_price = 1.0
         else:
             self.symbol = json_holding['symbol']
-            self.current_price = float( json_holding['current_price'] )
+            if 'current_price' in json_holding:
+                self.current_price = float( json_holding['current_price'] )
+            else:
+                self.current_price = fetch_price( json_holding['symbol'] )
 
     def is_cash_holding(self):
         return len(self.composition) == 1 and list(self.composition.keys())[0] == 'cash'
@@ -305,8 +336,13 @@ class JSONProportions(Proportions):
             if holding_type == 'stocks':
                 assert( 'us_stocks' not in json_proportions )
                 assert( 'int_stocks' not in json_proportions )
-                self.proportions['us_stocks'] = 7.0 * float( json_proportions['stocks'] ) / 10.0
-                self.proportions['int_stocks'] = 3.0 * float( json_proportions['stocks'] ) / 10.0
+                self.proportions['us_stocks'] = 0.8* float( json_proportions['stocks'] )
+                self.proportions['int_stocks'] = 0.2* float( json_proportions['stocks'] )
+            elif holding_type == 'stocks_esg':
+                assert( 'us_stocks_esg' not in json_proportions )
+                assert( 'int_stocks_esg' not in json_proportions )
+                self.proportions['us_stocks_esg'] = 0.8* float( json_proportions['stocks_esg'] )
+                self.proportions['int_stocks_esg'] = 0.2* float( json_proportions['stocks_esg'] )
             else:
                 self.proportions[holding_type] = float( json_proportions[holding_type] )
 
