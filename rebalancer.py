@@ -29,7 +29,7 @@ def fetch_price(symbol, date_str_format = '%m/%d/%Y %H:%M:%S'):
     else:
         price_cache = {}
 
-    if symbol not in price_cache or datetime.datetime.now() - datetime.datetime.strptime( price_cache[symbol]['date'], date_str_format) >= datetime.timedelta(minutes=10):
+    if symbol not in price_cache or datetime.datetime.now() - datetime.datetime.strptime( price_cache[symbol]['date'], date_str_format) >= datetime.timedelta(minutes=1):
         price_cache[symbol] = {}
         price_cache[symbol]['price'] = yahoo_fin.stock_info.get_live_price(symbol)
         price_cache[symbol]['date'] = datetime.datetime.now().strftime(date_str_format)
@@ -110,6 +110,14 @@ class Holding:
             return_str += 'Buy additional?: No\n'
         return return_str
 
+    def add(self, other):
+        self.__add__(other)
+
+    def __add__(self, other):
+        assert( other.symbol == self.symbol )
+        self.shares += other.shares
+        return self
+
 
 class CashHolding(Holding):
     def __init__ (self, starting_value = 0.0):
@@ -118,10 +126,6 @@ class CashHolding(Holding):
         self.buy_additional = False
         self.symbol = 'cash'
         self.current_price = 1.0
-
-    def add(self, other):
-        assert( other.is_cash_holding )
-        self.shares += other.shares
 
 
 class Holdings:
@@ -138,9 +142,11 @@ class Holdings:
             if holding.is_cash_holding():
                 self.cash_holding.add( holding )
             else:
-                assert( holding.symbol not in self.symbol_map )
-                self.symbol_map[holding.symbol] = holding
-                self.holdings.append( holding )
+                if holding.symbol in self.symbol_map:
+                    self.symbol_map[holding.symbol] += holding
+                else:
+                    self.symbol_map[holding.symbol] = holding
+                    self.holdings.append( holding )
 
         self.types_to_buy = {}
         for h in self.holdings:
